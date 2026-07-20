@@ -1,42 +1,163 @@
 <template>
-  <div class="app">
-    <header class="top-nav">
-      <div class="nav-container">
-        <div class="logo">
-          <h1>{{ t('nav.companyName') }}</h1>
-          <span class="subtitle">{{ t('nav.subtitle') }}</span>
-        </div>
-        <nav class="nav-tabs">
-          <router-link to="/" :class="{ active: $route.path === '/' }">
-            {{ t('nav.overview') }}
-          </router-link>
-          <router-link to="/inventory" :class="{ active: $route.path === '/inventory' }">
-            {{ t('nav.inventory') }}
-          </router-link>
-          <router-link to="/orders" :class="{ active: $route.path === '/orders' }">
-            {{ t('nav.orders') }}
-          </router-link>
-          <router-link to="/spending" :class="{ active: $route.path === '/spending' }">
-            {{ t('nav.finance') }}
-          </router-link>
-          <router-link to="/demand" :class="{ active: $route.path === '/demand' }">
-            {{ t('nav.demandForecast') }}
-          </router-link>
-          <router-link to="/reports" :class="{ active: $route.path === '/reports' }">
-            Reports
-          </router-link>
-        </nav>
+  <div
+    class="app-shell"
+    :class="{
+      'is-collapsed': collapsed && !isMobile,
+      'is-mobile-open': mobileOpen && isMobile
+    }"
+  >
+    <aside class="sidebar" :class="{ 'is-collapsed': collapsed && !isMobile }">
+      <div class="sidebar__brand">
+        <span class="sidebar__logo">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M3 7l9-4 9 4-9 4-9-4z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/>
+            <path d="M3 12l9 4 9-4" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/>
+            <path d="M3 17l9 4 9-4" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/>
+          </svg>
+        </span>
+        <span class="sidebar__brand-name">
+          <b>{{ t('nav.companyName') }}</b>
+          <span>{{ t('nav.subtitle') }}</span>
+        </span>
+      </div>
+
+      <button
+        class="nav-item sidebar__toggle"
+        type="button"
+        @click="toggleSidebar"
+        :title="collapsed ? 'Expand sidebar' : 'Collapse sidebar'"
+        aria-label="Toggle sidebar"
+      >
+        <svg class="sidebar__toggle-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M15 6l-6 6 6 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <span>{{ collapsed ? 'Expand' : 'Collapse' }}</span>
+      </button>
+
+      <nav class="nav-group">
+        <div class="nav-label">Operations</div>
+
+        <router-link
+          to="/"
+          class="nav-item"
+          active-class="nav-item"
+          exact-active-class="router-link-active"
+          :title="t('nav.overview')"
+          @click="closeMobile"
+        >
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <rect x="3" y="3" width="7" height="7" rx="1.5" stroke="currentColor"/>
+            <rect x="14" y="3" width="7" height="7" rx="1.5" stroke="currentColor"/>
+            <rect x="14" y="14" width="7" height="7" rx="1.5" stroke="currentColor"/>
+            <rect x="3" y="14" width="7" height="7" rx="1.5" stroke="currentColor"/>
+          </svg>
+          <span>{{ t('nav.overview') }}</span>
+        </router-link>
+
+        <router-link
+          to="/inventory"
+          class="nav-item"
+          :title="t('nav.inventory')"
+          @click="closeMobile"
+        >
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M21 8l-9-5-9 5v8l9 5 9-5V8z" stroke="currentColor" stroke-linejoin="round"/>
+            <path d="M3 8l9 5 9-5M12 13v8" stroke="currentColor" stroke-linejoin="round"/>
+          </svg>
+          <span>{{ t('nav.inventory') }}</span>
+        </router-link>
+
+        <router-link
+          to="/orders"
+          class="nav-item"
+          :title="t('nav.orders')"
+          @click="closeMobile"
+        >
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M9 3h6a1 1 0 011 1v1h1a1 1 0 011 1v14a1 1 0 01-1 1H6a1 1 0 01-1-1V6a1 1 0 011-1h1V4a1 1 0 011-1z" stroke="currentColor" stroke-linejoin="round"/>
+            <path d="M9 11l2 2 4-4" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <span>{{ t('nav.orders') }}</span>
+        </router-link>
+
+        <router-link
+          to="/spending"
+          class="nav-item"
+          :title="t('nav.finance')"
+          @click="closeMobile"
+        >
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <circle cx="12" cy="12" r="9" stroke="currentColor"/>
+            <path d="M14.5 9a2.5 2.5 0 00-2.5-1.5c-1.4 0-2.5.9-2.5 2s1.1 1.6 2.5 2 2.5.9 2.5 2-1.1 2-2.5 2A2.5 2.5 0 019.5 16M12 6v1.5M12 16.5V18" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <span>{{ t('nav.finance') }}</span>
+        </router-link>
+      </nav>
+
+      <nav class="nav-group">
+        <div class="nav-label">Insights</div>
+
+        <router-link
+          to="/demand"
+          class="nav-item"
+          :title="t('nav.demandForecast')"
+          @click="closeMobile"
+        >
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M4 15l5-5 4 4 7-7" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M15 7h5v5" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <span>{{ t('nav.demandForecast') }}</span>
+        </router-link>
+
+        <router-link
+          to="/reports"
+          class="nav-item"
+          title="Reports"
+          @click="closeMobile"
+        >
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M5 21V10M12 21V4M19 21v-7" stroke="currentColor" stroke-linecap="round"/>
+            <path d="M3 21h18" stroke="currentColor" stroke-linecap="round"/>
+          </svg>
+          <span>Reports</span>
+        </router-link>
+      </nav>
+
+      <div class="sidebar__foot">
         <LanguageSwitcher />
         <ProfileMenu
           @show-profile-details="showProfileDetails = true"
           @show-tasks="showTasks = true"
         />
       </div>
-    </header>
-    <FilterBar />
-    <main class="main-content">
-      <router-view />
-    </main>
+    </aside>
+
+    <div class="app-main">
+      <header class="page-header">
+        <button
+          class="sidebar__mobile-toggle"
+          type="button"
+          @click="toggleSidebar"
+          aria-label="Open navigation"
+        >
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M4 6h16M4 12h16M4 18h16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+          </svg>
+        </button>
+        <FilterBar />
+      </header>
+
+      <main class="content">
+        <router-view />
+      </main>
+    </div>
+
+    <div
+      v-if="mobileOpen && isMobile"
+      class="sidebar-backdrop"
+      @click="closeMobile"
+    ></div>
 
     <ProfileDetailsModal
       :is-open="showProfileDetails"
@@ -55,7 +176,7 @@
 </template>
 
 <script>
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, onUnmounted, computed } from 'vue'
 import { api } from './api'
 import { useAuth } from './composables/useAuth'
 import { useI18n } from './composables/useI18n'
@@ -146,6 +267,54 @@ export default {
       }
     }
 
+    // ---- Sidebar shell state (presentational only) ------------------------
+    const collapsed = ref(localStorage.getItem('sidebar-collapsed') === 'true')
+    const isMobile = ref(false)
+    const mobileOpen = ref(false)
+
+    let mqCollapse = null
+    let mqMobile = null
+
+    const syncViewport = () => {
+      isMobile.value = mqMobile ? mqMobile.matches : false
+      if (isMobile.value) {
+        // Off-canvas drawer on small screens — start closed.
+        mobileOpen.value = false
+      } else if (mqCollapse && mqCollapse.matches) {
+        // Auto-collapse to the icon rail on narrow viewports (<= 1024px).
+        collapsed.value = true
+      } else {
+        // Wide screens: restore the persisted user preference.
+        collapsed.value = localStorage.getItem('sidebar-collapsed') === 'true'
+      }
+    }
+
+    const toggleSidebar = () => {
+      if (isMobile.value) {
+        mobileOpen.value = !mobileOpen.value
+      } else {
+        collapsed.value = !collapsed.value
+        localStorage.setItem('sidebar-collapsed', String(collapsed.value))
+      }
+    }
+
+    const closeMobile = () => {
+      mobileOpen.value = false
+    }
+
+    onMounted(() => {
+      mqCollapse = window.matchMedia('(max-width: 1024px)')
+      mqMobile = window.matchMedia('(max-width: 640px)')
+      mqCollapse.addEventListener('change', syncViewport)
+      mqMobile.addEventListener('change', syncViewport)
+      syncViewport()
+    })
+
+    onUnmounted(() => {
+      if (mqCollapse) mqCollapse.removeEventListener('change', syncViewport)
+      if (mqMobile) mqMobile.removeEventListener('change', syncViewport)
+    })
+
     onMounted(loadTasks)
 
     return {
@@ -155,332 +324,136 @@ export default {
       tasks,
       addTask,
       deleteTask,
-      toggleTask
+      toggleTask,
+      collapsed,
+      isMobile,
+      mobileOpen,
+      toggleSidebar,
+      closeMobile
     }
   }
 }
 </script>
 
 <style>
-* {
-  margin: 0;
+/* ============================================================================
+   SHELL CHROME  (sidebar + top bar)
+   Layout primitives (.app-shell, .sidebar, .app-main, .page-header, .content,
+   .nav-item, .filter-bar) come from the global design system. The rules below
+   only add the collapse toggle, mobile off-canvas behaviour, and dock the
+   filter bar into the sticky page header.
+   ============================================================================ */
+
+/* Collapse / expand control, styled as a muted nav row. */
+.sidebar__toggle {
+  width: 100%;
+  border: 0;
+  background: none;
+  color: var(--nav-text-dim);
+  font-family: var(--font-sans);
+  font-size: var(--text-sm);
+  cursor: pointer;
+}
+.sidebar__toggle:hover {
+  background: var(--nav-hover);
+  color: var(--nav-text-strong);
+}
+.sidebar__toggle-icon {
+  transition: transform var(--transition-base);
+}
+.app-shell.is-collapsed .sidebar__toggle-icon {
+  transform: rotate(180deg);
+}
+
+/* Dock the global filter bar inside the sticky page header. */
+.app-main > .page-header {
+  margin-bottom: 0;
+}
+.page-header .filter-bar {
+  flex: 1;
   padding: 0;
-  box-sizing: border-box;
+  background: transparent;
+  border-bottom: 0;
 }
 
-body {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-  background: #f8fafc;
-  color: #1e293b;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-.app {
+/* Footer stack for language + profile controls. */
+.sidebar__foot {
   display: flex;
   flex-direction: column;
-  min-height: 100vh;
+  gap: var(--space-1);
 }
 
-.top-nav {
-  background: #ffffff;
-  border-bottom: 1px solid #e2e8f0;
-  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
-  position: sticky;
-  top: 0;
-  z-index: 100;
+/* Collapsed rail: hide footer labels/chevrons, center the controls. */
+.sidebar.is-collapsed .sidebar__foot .language-label,
+.sidebar.is-collapsed .sidebar__foot .profile-name,
+.sidebar.is-collapsed .sidebar__foot .language-button .chevron,
+.sidebar.is-collapsed .sidebar__foot .profile-button .chevron {
+  display: none;
 }
-
-.nav-container {
-  max-width: 1600px;
-  margin: 0 auto;
-  display: flex;
-  align-items: center;
-  padding: 0 2rem;
-  height: 70px;
+.sidebar.is-collapsed .sidebar__foot .language-button,
+.sidebar.is-collapsed .sidebar__foot .profile-button {
+  justify-content: center;
+  padding-inline: var(--space-2);
 }
-
-.nav-container > .nav-tabs {
-  margin-left: auto;
-  margin-right: 1rem;
-}
-
-.nav-container > .language-switcher {
-  margin-right: 1rem;
-}
-
-.logo {
-  display: flex;
-  align-items: baseline;
-  gap: 0.75rem;
-}
-
-.logo h1 {
-  font-size: 1.375rem;
-  font-weight: 700;
-  color: #0f172a;
-  letter-spacing: -0.025em;
-}
-
-.subtitle {
-  font-size: 0.813rem;
-  color: #64748b;
-  font-weight: 400;
-  padding-left: 0.75rem;
-  border-left: 1px solid #e2e8f0;
-}
-
-.nav-tabs {
-  display: flex;
-  gap: 0.25rem;
-}
-
-.nav-tabs a {
-  padding: 0.625rem 1.25rem;
-  color: #64748b;
-  text-decoration: none;
-  font-weight: 500;
-  font-size: 0.938rem;
-  border-radius: 6px;
-  transition: all 0.2s ease;
-  position: relative;
-}
-
-.nav-tabs a:hover {
-  color: #0f172a;
-  background: #f1f5f9;
-}
-
-.nav-tabs a.active {
-  color: #2563eb;
-  background: #eff6ff;
-}
-
-.nav-tabs a.active::after {
-  content: '';
-  position: absolute;
-  bottom: -1px;
+.sidebar.is-collapsed .sidebar__foot .dropdown-menu {
   left: 0;
-  right: 0;
-  height: 2px;
-  background: #2563eb;
 }
 
-.main-content {
-  flex: 1;
-  max-width: 1600px;
-  width: 100%;
-  margin: 0 auto;
-  padding: 1.5rem 2rem;
-}
-
-.page-header {
-  margin-bottom: 1.5rem;
-}
-
-.page-header h2 {
-  font-size: 1.875rem;
-  font-weight: 700;
-  color: #0f172a;
-  margin-bottom: 0.375rem;
-  letter-spacing: -0.025em;
-}
-
-.page-header p {
-  color: #64748b;
-  font-size: 0.938rem;
-}
-
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 1.25rem;
-  margin-bottom: 1.5rem;
-}
-
-.stat-card {
-  background: white;
-  padding: 1.25rem;
-  border-radius: 10px;
-  border: 1px solid #e2e8f0;
-  transition: all 0.2s ease;
-}
-
-.stat-card:hover {
-  border-color: #cbd5e1;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
-}
-
-.stat-label {
-  color: #64748b;
-  font-size: 0.875rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  margin-bottom: 0.625rem;
-}
-
-.stat-value {
-  font-size: 2.25rem;
-  font-weight: 700;
-  color: #0f172a;
-  letter-spacing: -0.025em;
-}
-
-.stat-card.warning .stat-value {
-  color: #ea580c;
-}
-
-.stat-card.success .stat-value {
-  color: #059669;
-}
-
-.stat-card.danger .stat-value {
-  color: #dc2626;
-}
-
-.stat-card.info .stat-value {
-  color: #2563eb;
-}
-
-.card {
-  background: white;
-  border-radius: 10px;
-  padding: 1.25rem;
-  border: 1px solid #e2e8f0;
-  margin-bottom: 1.25rem;
-}
-
-.card-header {
-  display: flex;
-  justify-content: space-between;
+/* Mobile-only hamburger that opens the off-canvas drawer. */
+.sidebar__mobile-toggle {
+  display: none;
   align-items: center;
-  margin-bottom: 1rem;
-  padding-bottom: 0.875rem;
-  border-bottom: 1px solid #e2e8f0;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  flex: none;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  color: var(--ink-2);
+  box-shadow: var(--shadow-1);
+  cursor: pointer;
+}
+.sidebar__mobile-toggle svg {
+  width: 20px;
+  height: 20px;
 }
 
-.card-title {
-  font-size: 1.125rem;
-  font-weight: 700;
-  color: #0f172a;
-  letter-spacing: -0.025em;
+/* Dimmed scrim behind the mobile drawer. */
+.sidebar-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-dropdown);
+  background: var(--ink);
+  opacity: 0.5;
+  border: 0;
 }
 
-.table-container {
-  overflow-x: auto;
+/* Off-canvas drawer behaviour on small screens. */
+@media (max-width: 640px) {
+  .app-shell,
+  .app-shell.is-collapsed {
+    grid-template-columns: 1fr;
+  }
+  .sidebar__mobile-toggle {
+    display: inline-flex;
+  }
+  .sidebar {
+    position: fixed;
+    inset: 0 auto 0 0;
+    width: var(--sidebar-w);
+    z-index: var(--z-overlay);
+    transform: translateX(-100%);
+    transition: transform var(--transition-base);
+  }
+  .app-shell.is-mobile-open .sidebar {
+    transform: translateX(0);
+    box-shadow: var(--shadow-3);
+  }
 }
 
-table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-thead {
-  background: #f8fafc;
-  border-top: 1px solid #e2e8f0;
-  border-bottom: 1px solid #e2e8f0;
-}
-
-th {
-  text-align: left;
-  padding: 0.5rem 0.75rem;
-  font-weight: 600;
-  color: #475569;
-  font-size: 0.75rem;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-
-td {
-  padding: 0.5rem 0.75rem;
-  border-top: 1px solid #f1f5f9;
-  color: #334155;
-  font-size: 0.875rem;
-}
-
-tbody tr {
-  transition: background-color 0.15s ease;
-}
-
-tbody tr:hover {
-  background: #f8fafc;
-}
-
-.badge {
-  display: inline-block;
-  padding: 0.313rem 0.75rem;
-  border-radius: 6px;
-  font-size: 0.75rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.025em;
-}
-
-.badge.success {
-  background: #d1fae5;
-  color: #065f46;
-}
-
-.badge.warning {
-  background: #fed7aa;
-  color: #92400e;
-}
-
-.badge.danger {
-  background: #fecaca;
-  color: #991b1b;
-}
-
-.badge.info {
-  background: #dbeafe;
-  color: #1e40af;
-}
-
-.badge.increasing {
-  background: #d1fae5;
-  color: #065f46;
-}
-
-.badge.decreasing {
-  background: #fecaca;
-  color: #991b1b;
-}
-
-.badge.stable {
-  background: #e0e7ff;
-  color: #3730a3;
-}
-
-.badge.high {
-  background: #fecaca;
-  color: #991b1b;
-}
-
-.badge.medium {
-  background: #fed7aa;
-  color: #92400e;
-}
-
-.badge.low {
-  background: #dbeafe;
-  color: #1e40af;
-}
-
-.loading {
-  text-align: center;
-  padding: 3rem;
-  color: #64748b;
-  font-size: 0.938rem;
-}
-
-.error {
-  background: #fef2f2;
-  border: 1px solid #fecaca;
-  color: #991b1b;
-  padding: 1rem;
-  border-radius: 8px;
-  margin: 1rem 0;
-  font-size: 0.938rem;
-}
+/* Legacy view helpers were removed. The design system is the single source of
+   truth for the redesigned views; view/modal-specific rules that were still in
+   use have been relocated into the scoped styles of the components that use
+   them (Backlog.vue and the detail modals). */
 </style>

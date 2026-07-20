@@ -427,6 +427,32 @@ const getSummaryCardClass = () => {
   border-color: #cbd5e1;
 }
 
+/* Status badge (relocated from legacy global styles) */
+.badge {
+  display: inline-block;
+  padding: 0.313rem 0.75rem;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+}
+
+.badge.success {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.badge.warning {
+  background: #fed7aa;
+  color: #92400e;
+}
+
+.badge.danger {
+  background: #fecaca;
+  color: #991b1b;
+}
+
 /* Modal transition animations */
 .modal-enter-active,
 .modal-leave-active {

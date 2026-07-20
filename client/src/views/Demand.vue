@@ -1,110 +1,112 @@
 <template>
-  <div class="demand">
-    <div class="page-header">
-      <h2>{{ t('demand.title') }}</h2>
-      <p>{{ t('demand.description') }}</p>
+  <div class="demand rise">
+    <div class="page-header__titles">
+      <h1 class="page-header__title">{{ t('demand.title') }}</h1>
+      <p class="page-header__subtitle">{{ t('demand.description') }}</p>
     </div>
 
-    <div v-if="loading" class="loading">{{ t('common.loading') }}</div>
-    <div v-else-if="error" class="error">{{ error }}</div>
+    <div v-if="loading" class="state-message">{{ t('common.loading') }}</div>
+    <div v-else-if="error" class="state-message state-message--error">{{ error }}</div>
     <div v-else>
-      <div class="demand-trend-cards">
-        <div class="trend-card increasing-card">
-          <div class="trend-header">
-            <div class="trend-icon">↑</div>
-            <div>
-              <div class="trend-label">{{ t('demand.increasingDemand') }}</div>
-              <div class="trend-count">{{ t('demand.itemsCount', { count: getForecastsByTrend('increasing').length }) }}</div>
+      <div class="trend-grid">
+        <div class="card trend-card trend-card--up">
+          <div class="card__body">
+            <div class="trend-card__head">
+              <span class="trend-card__icon trend-card__icon--up">↑</span>
+              <div>
+                <div class="trend-card__label">{{ t('demand.increasingDemand') }}</div>
+                <div class="trend-card__count">{{ t('demand.itemsCount', { count: getForecastsByTrend('increasing').length }) }}</div>
+              </div>
             </div>
-          </div>
-          <div class="trend-items">
-            <div v-for="item in getForecastsByTrend('increasing').slice(0, 5)" :key="item.id" class="trend-item">
-              <span class="item-name">{{ item.item_name }}</span>
-              <span class="item-change">+{{ getChangePercent(item) }}%</span>
-            </div>
-            <div v-if="getForecastsByTrend('increasing').length > 5" class="more-items">
-              +{{ getForecastsByTrend('increasing').length - 5 }} {{ t('demand.more') }}
-            </div>
-          </div>
-        </div>
-
-        <div class="trend-card stable-card">
-          <div class="trend-header">
-            <div class="trend-icon">→</div>
-            <div>
-              <div class="trend-label">{{ t('demand.stableDemand') }}</div>
-              <div class="trend-count">{{ t('demand.itemsCount', { count: getForecastsByTrend('stable').length }) }}</div>
-            </div>
-          </div>
-          <div class="trend-items">
-            <div v-for="item in getForecastsByTrend('stable').slice(0, 5)" :key="item.id" class="trend-item">
-              <span class="item-name">{{ item.item_name }}</span>
-              <span class="item-change neutral">{{ getChangePercent(item) }}%</span>
-            </div>
-            <div v-if="getForecastsByTrend('stable').length > 5" class="more-items">
-              +{{ getForecastsByTrend('stable').length - 5 }} {{ t('demand.more') }}
-            </div>
+            <ul class="trend-list">
+              <li v-for="item in getForecastsByTrend('increasing').slice(0, 5)" :key="item.id" class="trend-list__item">
+                <span class="trend-list__name">{{ item.item_name }}</span>
+                <span class="delta delta--up">+{{ getChangePercent(item) }}%</span>
+              </li>
+              <li v-if="getForecastsByTrend('increasing').length > 5" class="trend-list__more">
+                +{{ getForecastsByTrend('increasing').length - 5 }} {{ t('demand.more') }}
+              </li>
+            </ul>
           </div>
         </div>
 
-        <div class="trend-card decreasing-card">
-          <div class="trend-header">
-            <div class="trend-icon">↓</div>
-            <div>
-              <div class="trend-label">{{ t('demand.decreasingDemand') }}</div>
-              <div class="trend-count">{{ t('demand.itemsCount', { count: getForecastsByTrend('decreasing').length }) }}</div>
+        <div class="card trend-card trend-card--stable">
+          <div class="card__body">
+            <div class="trend-card__head">
+              <span class="trend-card__icon trend-card__icon--stable">→</span>
+              <div>
+                <div class="trend-card__label">{{ t('demand.stableDemand') }}</div>
+                <div class="trend-card__count">{{ t('demand.itemsCount', { count: getForecastsByTrend('stable').length }) }}</div>
+              </div>
             </div>
+            <ul class="trend-list">
+              <li v-for="item in getForecastsByTrend('stable').slice(0, 5)" :key="item.id" class="trend-list__item">
+                <span class="trend-list__name">{{ item.item_name }}</span>
+                <span class="delta delta--neutral">{{ getChangePercent(item) }}%</span>
+              </li>
+              <li v-if="getForecastsByTrend('stable').length > 5" class="trend-list__more">
+                +{{ getForecastsByTrend('stable').length - 5 }} {{ t('demand.more') }}
+              </li>
+            </ul>
           </div>
-          <div class="trend-items">
-            <div v-for="item in getForecastsByTrend('decreasing').slice(0, 5)" :key="item.id" class="trend-item">
-              <span class="item-name">{{ item.item_name }}</span>
-              <span class="item-change">{{ getChangePercent(item) }}%</span>
+        </div>
+
+        <div class="card trend-card trend-card--down">
+          <div class="card__body">
+            <div class="trend-card__head">
+              <span class="trend-card__icon trend-card__icon--down">↓</span>
+              <div>
+                <div class="trend-card__label">{{ t('demand.decreasingDemand') }}</div>
+                <div class="trend-card__count">{{ t('demand.itemsCount', { count: getForecastsByTrend('decreasing').length }) }}</div>
+              </div>
             </div>
-            <div v-if="getForecastsByTrend('decreasing').length > 5" class="more-items">
-              +{{ getForecastsByTrend('decreasing').length - 5 }} {{ t('demand.more') }}
-            </div>
+            <ul class="trend-list">
+              <li v-for="item in getForecastsByTrend('decreasing').slice(0, 5)" :key="item.id" class="trend-list__item">
+                <span class="trend-list__name">{{ item.item_name }}</span>
+                <span class="delta delta--down">{{ getChangePercent(item) }}%</span>
+              </li>
+              <li v-if="getForecastsByTrend('decreasing').length > 5" class="trend-list__more">
+                +{{ getForecastsByTrend('decreasing').length - 5 }} {{ t('demand.more') }}
+              </li>
+            </ul>
           </div>
         </div>
       </div>
 
       <div class="card">
-        <div class="card-header">
-          <h3 class="card-title">{{ t('demand.demandForecasts') }}</h3>
+        <div class="card__head">
+          <h3 class="card__title">{{ t('demand.demandForecasts') }}</h3>
         </div>
-        <div class="table-container">
-          <table>
-            <thead>
-              <tr>
-                <th>{{ t('demand.table.sku') }}</th>
-                <th>{{ t('demand.table.itemName') }}</th>
-                <th>{{ t('demand.table.currentDemand') }}</th>
-                <th>{{ t('demand.table.forecastedDemand') }}</th>
-                <th>{{ t('demand.table.change') }}</th>
-                <th>{{ t('demand.table.trend') }}</th>
-                <th>{{ t('demand.table.period') }}</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="forecast in forecasts" :key="forecast.id">
-                <td><strong>{{ forecast.item_sku }}</strong></td>
-                <td>{{ forecast.item_name }}</td>
-                <td>{{ forecast.current_demand }}</td>
-                <td><strong>{{ forecast.forecasted_demand }}</strong></td>
-                <td>
-                  <span :style="{ color: getChangeColor(forecast) }">
-                    {{ getChangePercent(forecast) }}%
-                  </span>
-                </td>
-                <td>
-                  <span :class="['badge', forecast.trend]">
-                    {{ t(`trends.${forecast.trend}`) }}
-                  </span>
-                </td>
-                <td>{{ translatePeriod(forecast.period) }}</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>{{ t('demand.table.sku') }}</th>
+              <th>{{ t('demand.table.itemName') }}</th>
+              <th class="is-numeric">{{ t('demand.table.currentDemand') }}</th>
+              <th class="is-numeric">{{ t('demand.table.forecastedDemand') }}</th>
+              <th class="is-numeric">{{ t('demand.table.change') }}</th>
+              <th>{{ t('demand.table.trend') }}</th>
+              <th>{{ t('demand.table.period') }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="forecast in forecasts" :key="forecast.id">
+              <td><span class="data-table__code">{{ forecast.item_sku }}</span></td>
+              <td>{{ forecast.item_name }}</td>
+              <td class="is-numeric"><span class="data-table__num">{{ forecast.current_demand }}</span></td>
+              <td class="is-numeric"><span class="data-table__num data-table__strong">{{ forecast.forecasted_demand }}</span></td>
+              <td class="is-numeric">
+                <span :class="['delta', getChangeClass(forecast)]">{{ getChangePercent(forecast) }}%</span>
+              </td>
+              <td>
+                <span :class="['status', trendStatusClass(forecast.trend)]">
+                  {{ t(`trends.${forecast.trend}`) }}
+                </span>
+              </td>
+              <td>{{ translatePeriod(forecast.period) }}</td>
+            </tr>
+          </tbody>
+        </table>
       </div>
     </div>
   </div>
@@ -175,18 +177,24 @@ export default {
       return change > 0 ? `+${change}` : change
     }
 
-    const getChangeColor = (forecast) => {
+    const getChangeClass = (forecast) => {
       const change = forecast.forecasted_demand - forecast.current_demand
       const changePercent = Math.abs((change / forecast.current_demand) * 100)
 
-      // If change is within ±2%, consider it stable and show blue
+      // If change is within ±2%, consider it stable
       if (changePercent <= 2) {
-        return '#3b82f6' // Blue for stable
+        return 'delta--neutral'
       }
 
-      if (change > 0) return '#10b981' // Green for increasing
-      if (change < 0) return '#ef4444' // Red for decreasing
-      return '#3b82f6' // Blue for no change
+      if (change > 0) return 'delta--up'
+      if (change < 0) return 'delta--down'
+      return 'delta--neutral'
+    }
+
+    const trendStatusClass = (trend) => {
+      if (trend === 'increasing') return 'status--success'
+      if (trend === 'decreasing') return 'status--danger'
+      return 'status--info'
     }
 
     const translatePeriod = (period) => {
@@ -216,7 +224,8 @@ export default {
       forecasts,
       getForecastsByTrend,
       getChangePercent,
-      getChangeColor,
+      getChangeClass,
+      trendStatusClass,
       translatePeriod
     }
   }
@@ -224,146 +233,132 @@ export default {
 </script>
 
 <style scoped>
-.demand-trend-cards {
+.state-message {
+  padding: var(--space-8);
+  color: var(--muted);
+  font-size: var(--text-sm);
+  text-align: center;
+}
+
+.state-message--error {
+  color: var(--danger);
+  background: var(--danger-soft);
+  border: 1px solid var(--danger-soft);
+  border-radius: var(--radius-md);
+}
+
+.trend-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-  gap: 1.5rem;
-  margin-bottom: 2rem;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-5);
+  margin-bottom: var(--space-6);
+}
+
+@media (max-width: 900px) {
+  .trend-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 .trend-card {
-  background: white;
-  border: 1px solid #e2e8f0;
-  border-radius: 10px;
-  padding: 1.5rem;
-  transition: all 0.2s ease;
+  border-left: var(--space-1) solid var(--border);
+  transition: box-shadow var(--transition-base), transform var(--transition-base);
 }
 
 .trend-card:hover {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  box-shadow: var(--shadow-2);
+  transform: translateY(-2px);
 }
 
-.increasing-card {
-  border-left: 4px solid #10b981;
-}
+.trend-card--up { border-left-color: var(--success); }
+.trend-card--stable { border-left-color: var(--info); }
+.trend-card--down { border-left-color: var(--danger); }
 
-.stable-card {
-  border-left: 4px solid #3b82f6;
-}
-
-.decreasing-card {
-  border-left: 4px solid #ef4444;
-}
-
-.trend-header {
+.trend-card__head {
   display: flex;
   align-items: center;
-  gap: 1rem;
-  margin-bottom: 1rem;
-  padding-bottom: 1rem;
-  border-bottom: 1px solid #f1f5f9;
+  gap: var(--space-4);
+  padding-bottom: var(--space-4);
+  margin-bottom: var(--space-4);
+  border-bottom: 1px solid var(--border);
 }
 
-.trend-icon {
-  width: 48px;
-  height: 48px;
+.trend-card__icon {
   display: flex;
+  flex-shrink: 0;
   align-items: center;
   justify-content: center;
-  border-radius: 10px;
-  font-size: 1.75rem;
-  font-weight: 700;
-  flex-shrink: 0;
+  width: var(--space-10);
+  height: var(--space-10);
+  border-radius: var(--radius-md);
+  font-family: var(--font-display);
+  font-size: var(--text-xl);
+  font-weight: var(--fw-bold);
 }
 
-.increasing-card .trend-icon {
-  background: #d1fae5;
-  color: #059669;
-}
+.trend-card__icon--up { color: var(--success); background: var(--success-soft); }
+.trend-card__icon--stable { color: var(--info); background: var(--info-soft); }
+.trend-card__icon--down { color: var(--danger); background: var(--danger-soft); }
 
-.stable-card .trend-icon {
-  background: #dbeafe;
-  color: #2563eb;
-}
-
-.decreasing-card .trend-icon {
-  background: #fee2e2;
-  color: #dc2626;
-}
-
-.trend-label {
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: #64748b;
+.trend-card__label {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  font-weight: var(--fw-semibold);
+  letter-spacing: var(--tracking-wide);
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  color: var(--muted);
 }
 
-.trend-count {
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: #0f172a;
-  margin-top: 0.25rem;
+.trend-card__count {
+  margin-top: var(--space-1);
+  font-family: var(--font-display);
+  font-size: var(--text-2xl);
+  font-weight: var(--fw-bold);
+  color: var(--ink);
 }
 
-.trend-items {
+.trend-list {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
 }
 
-.trend-item {
+.trend-list__item {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  padding: 0.5rem 0.75rem;
-  background: #f8fafc;
-  border-radius: 6px;
-  transition: background 0.2s;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  background: var(--surface-2);
+  border-radius: var(--radius-sm);
+  transition: background var(--transition-fast);
 }
 
-.trend-item:hover {
-  background: #f1f5f9;
-}
+.trend-list__item:hover { background: var(--surface-3); }
 
-.item-name {
-  font-size: 0.875rem;
-  color: #0f172a;
-  font-weight: 500;
+.trend-list__name {
   flex: 1;
   overflow: hidden;
+  font-size: var(--text-sm);
+  font-weight: var(--fw-medium);
+  color: var(--ink-2);
   text-overflow: ellipsis;
   white-space: nowrap;
-  margin-right: 1rem;
 }
 
-.item-change {
-  font-size: 0.813rem;
-  font-weight: 700;
-  flex-shrink: 0;
-}
-
-.increasing-card .item-change {
-  color: #059669;
-}
-
-.stable-card .item-change {
-  color: #3b82f6;
-}
-
-.decreasing-card .item-change {
-  color: #dc2626;
-}
-
-.item-change.neutral {
-  color: #64748b;
-}
-
-.more-items {
-  font-size: 0.813rem;
-  color: #64748b;
+.trend-list__more {
+  padding: var(--space-2);
+  font-size: var(--text-xs);
   font-style: italic;
+  color: var(--faint);
   text-align: center;
-  padding: 0.5rem;
+}
+
+.delta--neutral {
+  color: var(--info);
+  background: var(--info-soft);
 }
 </style>
