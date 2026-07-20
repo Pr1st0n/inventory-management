@@ -53,3 +53,7 @@ logs/
 
 # Environment variables
 .env
+
+# subagent-driven-development scratch
+.superpowers/
+.redesign-scratch/

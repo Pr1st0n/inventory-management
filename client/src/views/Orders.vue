@@ -1,52 +1,57 @@
 <template>
   <div class="orders">
-    <div class="page-header">
-      <h2>{{ t('orders.title') }}</h2>
-      <p>{{ t('orders.description') }}</p>
-    </div>
+    <header class="page-header">
+      <div class="page-header__titles">
+        <h1 class="page-header__title">{{ t('orders.title') }}</h1>
+        <p class="page-header__subtitle">{{ t('orders.description') }}</p>
+      </div>
+    </header>
 
-    <div v-if="loading" class="loading">{{ t('common.loading') }}</div>
-    <div v-else-if="error" class="error">{{ error }}</div>
+    <div v-if="loading" class="state-message">{{ t('common.loading') }}</div>
+    <div v-else-if="error" class="state-message state-message--error">{{ error }}</div>
     <div v-else>
-      <div class="stats-grid">
-        <div class="stat-card success">
-          <div class="stat-label">{{ t('status.delivered') }}</div>
-          <div class="stat-value">{{ getOrdersByStatus('Delivered').length }}</div>
-        </div>
-        <div class="stat-card info">
-          <div class="stat-label">{{ t('status.shipped') }}</div>
-          <div class="stat-value">{{ getOrdersByStatus('Shipped').length }}</div>
-        </div>
-        <div class="stat-card warning">
-          <div class="stat-label">{{ t('status.processing') }}</div>
-          <div class="stat-value">{{ getOrdersByStatus('Processing').length }}</div>
-        </div>
-        <div class="stat-card danger">
-          <div class="stat-label">{{ t('status.backordered') }}</div>
-          <div class="stat-value">{{ getOrdersByStatus('Backordered').length }}</div>
+      <div class="grid grid--kpis">
+        <div v-for="statusKey in statusKeys" :key="`kpi-${statusKey}`" class="stat-tile">
+          <div class="stat-tile__head">
+            <span class="stat-tile__label">{{ t(`status.${statusKey.toLowerCase()}`) }}</span>
+            <span :class="['stat-tile__icon', `stat-tile__icon--${getOrderStatusClass(statusKey)}`]">
+              <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="7" /></svg>
+            </span>
+          </div>
+          <div class="stat-tile__value">{{ getOrdersByStatus(statusKey).length }}</div>
         </div>
       </div>
 
-      <div class="card">
-        <div class="card-header">
-          <h3 class="card-title">{{ t('orders.allOrders') }} ({{ orders.length }})</h3>
+      <p class="orders-total">{{ t('orders.allOrders') }} ({{ orders.length }})</p>
+
+      <div
+        v-for="statusKey in statusKeys"
+        :key="`group-${statusKey}`"
+        class="card orders-group"
+      >
+        <div class="card__head">
+          <h3 class="card__title">{{ t(`status.${statusKey.toLowerCase()}`) }}</h3>
+          <span :class="['status', `status--${getOrderStatusClass(statusKey)}`]">
+            {{ getOrdersByStatus(statusKey).length }}
+          </span>
         </div>
         <div class="table-container">
-          <table class="orders-table">
+          <table class="data-table orders-table">
             <thead>
               <tr>
                 <th class="col-order-number">{{ t('orders.table.orderNumber') }}</th>
                 <th class="col-customer">{{ t('orders.table.customer') }}</th>
                 <th class="col-items">{{ t('orders.table.items') }}</th>
-                <th class="col-status">{{ t('orders.table.status') }}</th>
                 <th class="col-date">{{ t('orders.table.orderDate') }}</th>
                 <th class="col-date">{{ t('orders.table.expectedDelivery') }}</th>
-                <th class="col-value">{{ t('orders.table.totalValue') }}</th>
+                <th class="col-value is-numeric">{{ t('orders.table.totalValue') }}</th>
               </tr>
             </thead>
             <tbody>
-              <tr v-for="order in orders" :key="order.id">
-                <td class="col-order-number"><strong>{{ order.order_number }}</strong></td>
+              <tr v-for="order in getOrdersByStatus(statusKey)" :key="order.id">
+                <td class="col-order-number">
+                  <span class="data-table__code">{{ order.order_number }}</span>
+                </td>
                 <td class="col-customer">{{ translateCustomerName(order.customer) }}</td>
                 <td class="col-items">
                   <details class="items-details">
@@ -61,14 +66,11 @@
                     </div>
                   </details>
                 </td>
-                <td class="col-status">
-                  <span :class="['badge', getOrderStatusClass(order.status)]">
-                    {{ t(`status.${order.status.toLowerCase()}`) }}
-                  </span>
-                </td>
                 <td class="col-date">{{ formatDate(order.order_date) }}</td>
                 <td class="col-date">{{ formatDate(order.expected_delivery) }}</td>
-                <td class="col-value"><strong>{{ currencySymbol }}{{ order.total_value.toLocaleString() }}</strong></td>
+                <td class="col-value is-numeric">
+                  <span class="data-table__num">{{ currencySymbol }}{{ order.total_value.toLocaleString() }}</span>
+                </td>
               </tr>
             </tbody>
           </table>
@@ -95,6 +97,9 @@ export default {
     const loading = ref(true)
     const error = ref(null)
     const orders = ref([])
+
+    // Presentational-only: order of status groups/KPIs rendered in the template.
+    const statusKeys = ['Delivered', 'Shipped', 'Processing', 'Backordered']
 
     // Use shared filters
     const {
@@ -160,6 +165,7 @@ export default {
       loading,
       error,
       orders,
+      statusKeys,
       getOrdersByStatus,
       getOrderStatusClass,
       formatDate,
@@ -172,35 +178,63 @@ export default {
 </script>
 
 <style scoped>
+.page-header {
+  position: static;
+  background: transparent;
+  border-bottom: 0;
+  padding: 0;
+}
+
+.orders-total {
+  margin: 0 0 var(--space-3);
+  font-size: var(--text-sm);
+  font-weight: var(--fw-medium);
+  color: var(--muted);
+}
+
+.orders-group + .orders-group {
+  margin-top: var(--space-5);
+}
+
+.table-container {
+  overflow-x: auto;
+}
+
+.state-message {
+  padding: var(--space-8);
+  text-align: center;
+  color: var(--muted);
+  font-size: var(--text-sm);
+}
+
+.state-message--error {
+  color: var(--danger);
+}
+
 /* Fixed table layout to prevent column shifting */
 .orders-table {
   table-layout: fixed;
-  width: 100%;
 }
 
-/* Column widths */
+/* Column widths (character-based, not fixed px) */
 .col-order-number {
-  width: 130px;
+  width: 14ch;
 }
 
 .col-customer {
-  width: 180px;
+  width: 20ch;
 }
 
 .col-items {
-  width: 200px;
-}
-
-.col-status {
-  width: 130px;
+  width: 22ch;
 }
 
 .col-date {
-  width: 140px;
+  width: 15ch;
 }
 
 .col-value {
-  width: 120px;
+  width: 13ch;
 }
 
 /* Items details styling */
@@ -210,8 +244,9 @@ export default {
 
 .items-summary {
   cursor: pointer;
-  color: #3b82f6;
-  font-weight: 500;
+  color: var(--accent);
+  font-weight: var(--fw-medium);
+  font-size: var(--text-base);
   list-style: none;
   user-select: none;
   display: inline-block;
@@ -222,11 +257,11 @@ export default {
 }
 
 .items-summary::before {
-  content: '▶';
+  content: '\25B6';
   display: inline-block;
-  margin-right: 0.375rem;
-  font-size: 0.75rem;
-  transition: transform 0.2s;
+  margin-right: var(--space-1);
+  font-size: var(--text-2xs);
+  transition: transform var(--transition-fast);
 }
 
 .items-details[open] .items-summary::before {
@@ -234,7 +269,7 @@ export default {
 }
 
 .items-summary:hover {
-  color: #2563eb;
+  color: var(--accent-hover);
   text-decoration: underline;
 }
 
@@ -243,23 +278,23 @@ export default {
   position: absolute;
   top: 100%;
   left: 0;
-  margin-top: 0.5rem;
-  background: white;
-  border: 1px solid #e2e8f0;
-  border-radius: 8px;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-  padding: 0.75rem;
-  z-index: 10;
-  min-width: 300px;
-  max-width: 400px;
+  margin-top: var(--space-2);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-2);
+  padding: var(--space-3);
+  z-index: var(--z-dropdown);
+  min-width: 26ch;
+  max-width: 34ch;
 }
 
 .item-entry {
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
-  padding: 0.5rem;
-  border-bottom: 1px solid #f1f5f9;
+  gap: var(--space-1);
+  padding: var(--space-2);
+  border-bottom: 1px solid var(--border);
 }
 
 .item-entry:last-child {
@@ -267,13 +302,13 @@ export default {
 }
 
 .item-name {
-  font-size: 0.875rem;
-  font-weight: 500;
-  color: #0f172a;
+  font-size: var(--text-sm);
+  font-weight: var(--fw-medium);
+  color: var(--ink);
 }
 
 .item-meta {
-  font-size: 0.813rem;
-  color: #64748b;
+  font-size: var(--text-xs);
+  color: var(--muted);
 }
 </style>

@@ -1,275 +1,296 @@
 <template>
   <div class="dashboard">
-    <div class="page-header">
-      <h2>{{ t('dashboard.title') }}</h2>
-    </div>
+    <div v-if="loading" class="state-msg">{{ t('common.loading') }}</div>
+    <div v-else-if="error" class="state-msg state-msg--error">{{ error }}</div>
+    <div v-else class="dash-body">
+      <h2 class="page-header__title">{{ t('dashboard.title') }}</h2>
 
-    <div v-if="loading" class="loading">{{ t('common.loading') }}</div>
-    <div v-else-if="error" class="error">{{ error }}</div>
-    <div v-else>
       <!-- Key Performance Indicators -->
-      <div class="kpi-section">
+      <section>
         <h3 class="section-title">{{ t('dashboard.kpi.title') }}</h3>
-        <div class="kpi-grid">
-          <div class="kpi-card">
-            <div class="kpi-header">
-              <span class="kpi-label">{{ t('dashboard.kpi.inventoryTurnover') }}</span>
+        <div class="grid grid--kpis rise">
+          <div class="stat-tile">
+            <div class="stat-tile__head">
+              <span class="stat-tile__label">{{ t('dashboard.kpi.inventoryTurnover') }}</span>
+              <span class="stat-tile__icon stat-tile__icon--info">
+                <svg viewBox="0 0 24 24"><path d="M23 4v6h-6"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+              </span>
             </div>
-            <div class="kpi-value">4.2</div>
-            <div class="kpi-goal">{{ t('dashboard.kpi.goal') }}: 4.5 (-6.67%)</div>
-            <div class="kpi-progress-bar">
-              <div class="kpi-progress" style="width: 93.33%"></div>
-            </div>
-          </div>
-
-          <div class="kpi-card">
-            <div class="kpi-header">
-              <span class="kpi-label">{{ t('dashboard.kpi.ordersFulfilled') }}</span>
-            </div>
-            <div class="kpi-value">{{ ordersData.fulfilled }}</div>
-            <div class="kpi-goal">{{ t('dashboard.kpi.goal') }}: {{ ordersData.goal }} ({{ calculatePercentage(ordersData.fulfilled, ordersData.goal) }}%)</div>
-            <div class="kpi-progress-bar">
-              <div class="kpi-progress" :style="{ width: calculatePercentage(ordersData.fulfilled, ordersData.goal) + '%' }"></div>
+            <div class="stat-tile__value">4.2</div>
+            <div class="progress"><div class="progress__fill" style="width: 93.33%"></div></div>
+            <div class="stat-tile__foot">
+              <span class="stat-tile__since">{{ t('dashboard.kpi.goal') }}: 4.5 (-6.67%)</span>
             </div>
           </div>
 
-          <div class="kpi-card">
-            <div class="kpi-header">
-              <span class="kpi-label">{{ t('dashboard.kpi.orderFillRate') }}</span>
+          <div class="stat-tile">
+            <div class="stat-tile__head">
+              <span class="stat-tile__label">{{ t('dashboard.kpi.ordersFulfilled') }}</span>
+              <span class="stat-tile__icon stat-tile__icon--success">
+                <svg viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="M22 4 12 14.01l-3-3"/></svg>
+              </span>
             </div>
-            <div class="kpi-value">{{ fillRate }}%</div>
-            <div class="kpi-goal">{{ t('dashboard.kpi.goal') }}: 95% ({{ fillRate - 95 > 0 ? '+' : '' }}{{ (fillRate - 95).toFixed(2) }}%)</div>
-            <div class="kpi-progress-bar">
-              <div class="kpi-progress success" :style="{ width: (fillRate / 95 * 100) + '%' }"></div>
-            </div>
-          </div>
-
-          <div class="kpi-card">
-            <div class="kpi-header">
-              <span class="kpi-label">{{ t(selectedPeriod === 'all' ? 'dashboard.kpi.revenueYTD' : 'dashboard.kpi.revenueMTD') }}</span>
-            </div>
-            <div class="kpi-value">{{ formatCurrency(Math.round(summary.total_orders_value), selectedCurrency) }}</div>
-            <div class="kpi-goal">{{ t('dashboard.kpi.goal') }}: {{ formatCurrency(revenueGoal, selectedCurrency) }} ({{ summary.total_orders_value > revenueGoal ? '+' : '' }}{{ ((summary.total_orders_value / revenueGoal - 1) * 100).toFixed(1) }}%)</div>
-            <div class="kpi-progress-bar">
-              <div class="kpi-progress" :style="{ width: Math.min((summary.total_orders_value / revenueGoal * 100), 100) + '%' }"></div>
+            <div class="stat-tile__value">{{ ordersData.fulfilled }}</div>
+            <div class="progress"><div class="progress__fill" :style="{ width: calculatePercentage(ordersData.fulfilled, ordersData.goal) + '%' }"></div></div>
+            <div class="stat-tile__foot">
+              <span class="stat-tile__since">{{ t('dashboard.kpi.goal') }}: {{ ordersData.goal }} ({{ calculatePercentage(ordersData.fulfilled, ordersData.goal) }}%)</span>
             </div>
           </div>
 
-          <div class="kpi-card">
-            <div class="kpi-header">
-              <span class="kpi-label">{{ t('dashboard.kpi.avgProcessingTime') }}</span>
+          <div class="stat-tile">
+            <div class="stat-tile__head">
+              <span class="stat-tile__label">{{ t('dashboard.kpi.orderFillRate') }}</span>
+              <span class="stat-tile__icon stat-tile__icon--info">
+                <svg viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M18 17V9M13 17V5M8 17v-3"/></svg>
+              </span>
             </div>
-            <div class="kpi-value">2.8</div>
-            <div class="kpi-goal">{{ t('dashboard.kpi.goal') }}: 3.0 (-6.67%)</div>
-            <div class="kpi-progress-bar">
-              <div class="kpi-progress success" style="width: 93.33%"></div>
+            <div class="stat-tile__value">{{ fillRate }}%</div>
+            <div class="progress"><div class="progress__fill" :style="{ width: (fillRate / 95 * 100) + '%' }"></div></div>
+            <div class="stat-tile__foot">
+              <span class="stat-tile__since">{{ t('dashboard.kpi.goal') }}: 95% ({{ fillRate - 95 > 0 ? '+' : '' }}{{ (fillRate - 95).toFixed(2) }}%)</span>
+            </div>
+          </div>
+
+          <div class="stat-tile">
+            <div class="stat-tile__head">
+              <span class="stat-tile__label">{{ t(selectedPeriod === 'all' ? 'dashboard.kpi.revenueYTD' : 'dashboard.kpi.revenueMTD') }}</span>
+              <span class="stat-tile__icon stat-tile__icon--success">
+                <svg viewBox="0 0 24 24"><path d="M23 6l-9.5 9.5-5-5L1 18"/><path d="M17 6h6v6"/></svg>
+              </span>
+            </div>
+            <div class="stat-tile__value">{{ formatCurrency(Math.round(summary.total_orders_value), selectedCurrency) }}</div>
+            <div class="progress"><div class="progress__fill" :style="{ width: Math.min((summary.total_orders_value / revenueGoal * 100), 100) + '%' }"></div></div>
+            <div class="stat-tile__foot">
+              <span class="stat-tile__since">{{ t('dashboard.kpi.goal') }}: {{ formatCurrency(revenueGoal, selectedCurrency) }} ({{ summary.total_orders_value > revenueGoal ? '+' : '' }}{{ ((summary.total_orders_value / revenueGoal - 1) * 100).toFixed(1) }}%)</span>
+            </div>
+          </div>
+
+          <div class="stat-tile">
+            <div class="stat-tile__head">
+              <span class="stat-tile__label">{{ t('dashboard.kpi.avgProcessingTime') }}</span>
+              <span class="stat-tile__icon stat-tile__icon--warning">
+                <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+              </span>
+            </div>
+            <div class="stat-tile__value">2.8</div>
+            <div class="progress"><div class="progress__fill" style="width: 93.33%"></div></div>
+            <div class="stat-tile__foot">
+              <span class="stat-tile__since">{{ t('dashboard.kpi.goal') }}: 3.0 (-6.67%)</span>
             </div>
           </div>
         </div>
-      </div>
+      </section>
 
-      <!-- Summary Section -->
-      <div class="summary-section">
+      <!-- Summary / Charts -->
+      <section>
         <h3 class="section-title">{{ t('dashboard.summary.title') }}</h3>
+        <div class="grid grid--wide-narrow">
+          <!-- Order Health Dashboard -->
+          <div class="card">
+            <div class="card__head">
+              <h3 class="card__title">{{ t('dashboard.orderHealth.title') }}</h3>
+              <span class="card__meta">{{ orderHealthMetrics.totalOrders }}</span>
+            </div>
+            <div class="card__body">
+              <div class="order-health">
+                <!-- Left: Donut Chart -->
+                <div class="order-health__chart">
+                  <div class="donut-center">
+                    <svg width="184" height="184" viewBox="0 0 200 200" class="donut">
+                      <circle class="donut__track" cx="100" cy="100" r="65" fill="none" stroke-width="25"/>
+                      <circle class="donut__seg donut__seg--delivered" cx="100" cy="100" r="65" fill="none" stroke-width="25"
+                        :stroke-dasharray="`${getCircleSegment(statusData.delivered)} 408`"
+                        stroke-dashoffset="0" transform="rotate(-90 100 100)"/>
+                      <circle class="donut__seg donut__seg--shipped" cx="100" cy="100" r="65" fill="none" stroke-width="25"
+                        :stroke-dasharray="`${getCircleSegment(statusData.shipped)} 408`"
+                        :stroke-dashoffset="`-${getCircleSegment(statusData.delivered)}`"
+                        transform="rotate(-90 100 100)"/>
+                      <circle class="donut__seg donut__seg--processing" cx="100" cy="100" r="65" fill="none" stroke-width="25"
+                        :stroke-dasharray="`${getCircleSegment(statusData.processing)} 408`"
+                        :stroke-dashoffset="`-${getCircleSegment(statusData.delivered) + getCircleSegment(statusData.shipped)}`"
+                        transform="rotate(-90 100 100)"/>
+                      <circle class="donut__seg donut__seg--backordered" cx="100" cy="100" r="65" fill="none" stroke-width="25"
+                        :stroke-dasharray="`${getCircleSegment(statusData.backordered)} 408`"
+                        :stroke-dashoffset="`-${getCircleSegment(statusData.delivered) + getCircleSegment(statusData.shipped) + getCircleSegment(statusData.processing)}`"
+                        transform="rotate(-90 100 100)"/>
+                    </svg>
+                    <div class="donut-center__value">
+                      <div>
+                        <b>{{ orderHealthMetrics.totalOrders }}</b>
+                        <span>{{ t('dashboard.orderHealth.total') }}</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="legend">
+                    <span class="legend__item"><span class="legend__swatch legend__swatch--delivered"></span>{{ t('status.delivered') }}</span>
+                    <span class="legend__item"><span class="legend__swatch legend__swatch--shipped"></span>{{ t('status.shipped') }}</span>
+                    <span class="legend__item"><span class="legend__swatch legend__swatch--processing"></span>{{ t('status.processing') }}</span>
+                    <span class="legend__item"><span class="legend__swatch legend__swatch--backordered"></span>{{ t('status.backordered') }}</span>
+                  </div>
+                </div>
+
+                <!-- Right: Health Metrics -->
+                <div class="order-health__metrics">
+                  <div class="metric">
+                    <span class="metric__label">{{ t('dashboard.orderHealth.revenue') }}</span>
+                    <span class="metric__value">{{ formatCurrency(orderHealthMetrics.totalValue, selectedCurrency) }}</span>
+                  </div>
+                  <div class="metric">
+                    <span class="metric__label">{{ t('dashboard.orderHealth.avgOrderValue') }}</span>
+                    <span class="metric__value">{{ formatCurrency(orderHealthMetrics.avgOrderValue, selectedCurrency) }}</span>
+                  </div>
+                  <div class="metric">
+                    <span class="metric__label">{{ t('dashboard.orderHealth.onTimeRate') }}</span>
+                    <span class="metric__value" :class="{ 'metric__value--good': orderHealthMetrics.onTimeRate >= 90, 'metric__value--warning': orderHealthMetrics.onTimeRate < 90 && orderHealthMetrics.onTimeRate >= 75, 'metric__value--bad': orderHealthMetrics.onTimeRate < 75 }">
+                      {{ orderHealthMetrics.onTimeRate.toFixed(1) }}%
+                    </span>
+                  </div>
+                  <div class="metric">
+                    <span class="metric__label">{{ t('dashboard.orderHealth.avgFulfillmentDays') }}</span>
+                    <span class="metric__value">{{ orderHealthMetrics.avgFulfillmentDays.toFixed(1) }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Inventory by Category -->
+          <div class="card">
+            <div class="card__head">
+              <h3 class="card__title">{{ t('dashboard.inventoryValue.title') }}</h3>
+            </div>
+            <div class="card__body">
+              <div class="bars" v-if="categoryData.length > 0">
+                <div v-for="cat in categoryData" :key="cat.name" class="bar-row">
+                  <div class="bar-row__meta">
+                    <b>{{ translateCategory(cat.name) }}</b>
+                    <span>{{ selectedCurrency === 'JPY' ? formatCurrency(cat.value, selectedCurrency) : `$${(cat.value / 1000).toFixed(1)}K` }}</span>
+                  </div>
+                  <div class="progress"><div class="progress__fill" :style="{ width: (cat.value / maxCategoryValue * 100) + '%' }"></div></div>
+                </div>
+              </div>
+              <div v-else class="no-data">{{ t('dashboard.inventoryShortages.noData') }}</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Inventory Shortages -->
+      <div class="card">
+        <div class="card__head">
+          <h3 class="card__title">{{ t('dashboard.inventoryShortages.title') }} ({{ backlogItems.length }})</h3>
+        </div>
+        <div v-if="backlogItems.length === 0" class="no-shortage">
+          <svg class="no-shortage__icon" width="44" height="44" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+          </svg>
+          <p class="no-shortage__text">{{ t('dashboard.inventoryShortages.noShortages') }}</p>
+        </div>
+        <div v-else class="table-scroll">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>{{ t('dashboard.inventoryShortages.orderId') }}</th>
+                <th>{{ t('dashboard.inventoryShortages.sku') }}</th>
+                <th>{{ t('dashboard.inventoryShortages.itemName') }}</th>
+                <th class="is-numeric">{{ t('dashboard.inventoryShortages.quantityNeeded') }}</th>
+                <th class="is-numeric">{{ t('dashboard.inventoryShortages.quantityAvailable') }}</th>
+                <th>{{ t('dashboard.inventoryShortages.shortage') }}</th>
+                <th>{{ t('dashboard.inventoryShortages.daysDelayed') }}</th>
+                <th>{{ t('dashboard.inventoryShortages.priority') }}</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr
+                v-for="item in backlogItems"
+                :key="item.id"
+              >
+                <td class="cell-link" @click="showBacklogDetail(item)"><span class="data-table__code">{{ item.order_id }}</span></td>
+                <td class="cell-link" @click="showBacklogDetail(item)"><span class="data-table__code">{{ item.item_sku }}</span></td>
+                <td class="cell-link" @click="showBacklogDetail(item)">{{ translateProductName(item.item_name) }}</td>
+                <td class="cell-link is-numeric" @click="showBacklogDetail(item)"><span class="data-table__num">{{ item.quantity_needed }}</span></td>
+                <td class="cell-link is-numeric" @click="showBacklogDetail(item)"><span class="data-table__num">{{ item.quantity_available }}</span></td>
+                <td class="cell-link" @click="showBacklogDetail(item)">
+                  <span class="badge badge--danger">
+                    {{ Math.abs(item.quantity_needed - item.quantity_available) }} {{ t('dashboard.inventoryShortages.unitsShort') }}
+                  </span>
+                </td>
+                <td class="cell-link" @click="showBacklogDetail(item)">
+                  <span :class="item.days_delayed > 7 ? 'text-danger' : 'text-warning'">
+                    {{ item.days_delayed }} {{ t('dashboard.inventoryShortages.days') }}
+                  </span>
+                </td>
+                <td class="cell-link" @click="showBacklogDetail(item)">
+                  <span class="badge" :class="{
+                    'badge--danger': item.priority.toLowerCase() === 'high',
+                    'badge--warning': item.priority.toLowerCase() === 'medium',
+                    'badge--success': item.priority.toLowerCase() === 'low'
+                  }">
+                    {{ translatePriority(item.priority) }}
+                  </span>
+                </td>
+                <td>
+                  <button
+                    v-if="!item.purchase_order_id"
+                    @click.stop="openPOModal(item)"
+                    class="btn btn-primary btn-sm"
+                  >
+                    Create PO
+                  </button>
+                  <button
+                    v-else
+                    @click.stop="viewPO(item)"
+                    class="btn btn-ghost btn-sm"
+                  >
+                    View PO
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
 
-      <!-- Charts Grid -->
-      <div class="charts-grid">
-        <!-- Order Health Dashboard -->
-        <div class="card chart-card">
-          <div class="card-header">
-            <h3 class="card-title">{{ t('dashboard.orderHealth.title') }}</h3>
-          </div>
-          <div class="chart-content">
-            <div class="order-health-container">
-              <!-- Left: Donut Chart -->
-              <div class="order-health-chart">
-                <svg viewBox="0 0 200 200" class="donut-svg-compact">
-                  <circle cx="100" cy="100" r="65" fill="none" stroke="#e2e8f0" stroke-width="25"/>
-                  <circle cx="100" cy="100" r="65" fill="none" stroke="#10b981" stroke-width="25"
-                    :stroke-dasharray="`${getCircleSegment(statusData.delivered)} 408`"
-                    stroke-dashoffset="0" transform="rotate(-90 100 100)"/>
-                  <circle cx="100" cy="100" r="65" fill="none" stroke="#3b82f6" stroke-width="25"
-                    :stroke-dasharray="`${getCircleSegment(statusData.shipped)} 408`"
-                    :stroke-dashoffset="`-${getCircleSegment(statusData.delivered)}`"
-                    transform="rotate(-90 100 100)"/>
-                  <circle cx="100" cy="100" r="65" fill="none" stroke="#f59e0b" stroke-width="25"
-                    :stroke-dasharray="`${getCircleSegment(statusData.processing)} 408`"
-                    :stroke-dashoffset="`-${getCircleSegment(statusData.delivered) + getCircleSegment(statusData.shipped)}`"
-                    transform="rotate(-90 100 100)"/>
-                  <circle cx="100" cy="100" r="65" fill="none" stroke="#ef4444" stroke-width="25"
-                    :stroke-dasharray="`${getCircleSegment(statusData.backordered)} 408`"
-                    :stroke-dashoffset="`-${getCircleSegment(statusData.delivered) + getCircleSegment(statusData.shipped) + getCircleSegment(statusData.processing)}`"
-                    transform="rotate(-90 100 100)"/>
-                  <text x="100" y="90" text-anchor="middle" class="donut-center-label">{{ t('dashboard.orderHealth.total') }}</text>
-                  <text x="100" y="120" text-anchor="middle" class="donut-center-value">{{ orderHealthMetrics.totalOrders }}</text>
-                </svg>
-                <div class="donut-legend-compact">
-                  <div class="legend-item-compact"><span class="legend-dot" style="background: #10b981"></span>{{ t('status.delivered') }}</div>
-                  <div class="legend-item-compact"><span class="legend-dot" style="background: #3b82f6"></span>{{ t('status.shipped') }}</div>
-                  <div class="legend-item-compact"><span class="legend-dot" style="background: #f59e0b"></span>{{ t('status.processing') }}</div>
-                  <div class="legend-item-compact"><span class="legend-dot" style="background: #ef4444"></span>{{ t('status.backordered') }}</div>
-                </div>
-              </div>
-
-              <!-- Right: Health Metrics -->
-              <div class="order-health-metrics">
-                <div class="health-metric">
-                  <div class="health-metric-label">{{ t('dashboard.orderHealth.revenue') }}</div>
-                  <div class="health-metric-value">{{ formatCurrency(orderHealthMetrics.totalValue, selectedCurrency) }}</div>
-                </div>
-                <div class="health-metric">
-                  <div class="health-metric-label">{{ t('dashboard.orderHealth.avgOrderValue') }}</div>
-                  <div class="health-metric-value">{{ formatCurrency(orderHealthMetrics.avgOrderValue, selectedCurrency) }}</div>
-                </div>
-                <div class="health-metric">
-                  <div class="health-metric-label">{{ t('dashboard.orderHealth.onTimeRate') }}</div>
-                  <div class="health-metric-value" :class="{ 'metric-good': orderHealthMetrics.onTimeRate >= 90, 'metric-warning': orderHealthMetrics.onTimeRate < 90 && orderHealthMetrics.onTimeRate >= 75, 'metric-bad': orderHealthMetrics.onTimeRate < 75 }">
-                    {{ orderHealthMetrics.onTimeRate.toFixed(1) }}%
-                  </div>
-                </div>
-                <div class="health-metric">
-                  <div class="health-metric-label">{{ t('dashboard.orderHealth.avgFulfillmentDays') }}</div>
-                  <div class="health-metric-value">{{ orderHealthMetrics.avgFulfillmentDays.toFixed(1) }}</div>
-                </div>
-              </div>
-            </div>
-          </div>
+      <!-- Top Products Table -->
+      <div class="card">
+        <div class="card__head">
+          <h3 class="card__title">{{ t('dashboard.topProducts.title') }}</h3>
         </div>
-
-        <!-- Inventory by Category -->
-        <div class="card chart-card">
-          <div class="card-header">
-            <h3 class="card-title">{{ t('dashboard.inventoryValue.title') }}</h3>
-          </div>
-          <div class="chart-content">
-            <div class="horizontal-bar-chart" v-if="categoryData.length > 0">
-              <div v-for="cat in categoryData" :key="cat.name" class="h-bar-item">
-                <div class="h-bar-label">{{ translateCategory(cat.name) }}</div>
-                <div class="h-bar-container">
-                  <div class="h-bar" :style="{ width: (cat.value / maxCategoryValue * 100) + '%', background: cat.color }">
-                    <span class="h-bar-value">{{ selectedCurrency === 'JPY' ? formatCurrency(cat.value, selectedCurrency) : `$${(cat.value / 1000).toFixed(1)}K` }}</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div v-else class="no-data">{{ t('dashboard.inventoryShortages.noData') }}</div>
-          </div>
-        </div>
-
-        <!-- Inventory Shortages -->
-        <div class="card chart-card full-width">
-          <div class="card-header">
-            <h3 class="card-title">{{ t('dashboard.inventoryShortages.title') }} ({{ backlogItems.length }})</h3>
-          </div>
-          <div v-if="backlogItems.length === 0" class="no-backlog">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="success-icon">
-              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-            </svg>
-            <p class="no-backlog-text">{{ t('dashboard.inventoryShortages.noShortages') }}</p>
-          </div>
-          <div v-else class="table-container">
-            <table>
-              <thead>
-                <tr>
-                  <th>{{ t('dashboard.inventoryShortages.orderId') }}</th>
-                  <th>{{ t('dashboard.inventoryShortages.sku') }}</th>
-                  <th>{{ t('dashboard.inventoryShortages.itemName') }}</th>
-                  <th>{{ t('dashboard.inventoryShortages.quantityNeeded') }}</th>
-                  <th>{{ t('dashboard.inventoryShortages.quantityAvailable') }}</th>
-                  <th>{{ t('dashboard.inventoryShortages.shortage') }}</th>
-                  <th>{{ t('dashboard.inventoryShortages.daysDelayed') }}</th>
-                  <th>{{ t('dashboard.inventoryShortages.priority') }}</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr
-                  v-for="item in backlogItems"
-                  :key="item.id"
-                >
-                  <td @click="showBacklogDetail(item)" style="cursor: pointer;"><strong>{{ item.order_id }}</strong></td>
-                  <td @click="showBacklogDetail(item)" style="cursor: pointer;"><strong>{{ item.item_sku }}</strong></td>
-                  <td @click="showBacklogDetail(item)" style="cursor: pointer;">{{ translateProductName(item.item_name) }}</td>
-                  <td @click="showBacklogDetail(item)" style="cursor: pointer;">{{ item.quantity_needed }}</td>
-                  <td @click="showBacklogDetail(item)" style="cursor: pointer;">{{ item.quantity_available }}</td>
-                  <td @click="showBacklogDetail(item)" style="cursor: pointer;">
-                    <span class="badge danger">
-                      {{ Math.abs(item.quantity_needed - item.quantity_available) }} {{ t('dashboard.inventoryShortages.unitsShort') }}
-                    </span>
-                  </td>
-                  <td @click="showBacklogDetail(item)" style="cursor: pointer;">
-                    <span :style="{ color: item.days_delayed > 7 ? '#ef4444' : '#f59e0b', fontWeight: 600 }">
-                      {{ item.days_delayed }} {{ t('dashboard.inventoryShortages.days') }}
-                    </span>
-                  </td>
-                  <td @click="showBacklogDetail(item)" style="cursor: pointer;">
-                    <span :class="['badge', item.priority]">
-                      {{ translatePriority(item.priority) }}
-                    </span>
-                  </td>
-                  <td>
-                    <button
-                      v-if="!item.purchase_order_id"
-                      @click.stop="openPOModal(item)"
-                      class="po-button create"
-                    >
-                      Create PO
-                    </button>
-                    <button
-                      v-else
-                      @click.stop="viewPO(item)"
-                      class="po-button view"
-                    >
-                      View PO
-                    </button>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        <!-- Top Products Table -->
-        <div class="card chart-card full-width">
-          <div class="card-header">
-            <h3 class="card-title">{{ t('dashboard.topProducts.title') }}</h3>
-          </div>
-          <div class="table-container">
-            <table>
-              <thead>
-                <tr>
-                  <th>{{ t('dashboard.topProducts.product') }}</th>
-                  <th>{{ t('dashboard.topProducts.sku') }}</th>
-                  <th>{{ t('dashboard.topProducts.category') }}</th>
-                  <th>{{ t('dashboard.topProducts.unitsOrdered') }}</th>
-                  <th>{{ t('dashboard.topProducts.revenue') }}</th>
-                  <th>{{ t('dashboard.topProducts.firstOrder') }}</th>
-                  <th>{{ t('dashboard.topProducts.stockStatus') }}</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr
-                  v-for="item in topProducts"
-                  :key="item.sku"
-                  class="clickable-row"
-                  @click="showProductDetail(item)"
-                >
-                  <td><strong>{{ translateProductName(item.name) }}</strong></td>
-                  <td>{{ item.sku }}</td>
-                  <td>{{ translateCategory(item.category) }}</td>
-                  <td>{{ item.unitsOrdered }}</td>
-                  <td><strong>{{ formatCurrency(item.revenue, selectedCurrency) }}</strong></td>
-                  <td>{{ formatDate(item.firstOrderDate) }}</td>
-                  <td>
-                    <span :class="['badge', getStockBadge(item.stockLevel)]">
-                      {{ translateStockLevel(item.stockLevel) }}
-                    </span>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
+        <div class="table-scroll">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>{{ t('dashboard.topProducts.product') }}</th>
+                <th>{{ t('dashboard.topProducts.sku') }}</th>
+                <th>{{ t('dashboard.topProducts.category') }}</th>
+                <th class="is-numeric">{{ t('dashboard.topProducts.unitsOrdered') }}</th>
+                <th class="is-numeric">{{ t('dashboard.topProducts.revenue') }}</th>
+                <th>{{ t('dashboard.topProducts.firstOrder') }}</th>
+                <th>{{ t('dashboard.topProducts.stockStatus') }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr
+                v-for="item in topProducts"
+                :key="item.sku"
+                class="row-link"
+                @click="showProductDetail(item)"
+              >
+                <td><span class="data-table__strong">{{ translateProductName(item.name) }}</span></td>
+                <td><span class="data-table__code">{{ item.sku }}</span></td>
+                <td>{{ translateCategory(item.category) }}</td>
+                <td class="is-numeric"><span class="data-table__num">{{ item.unitsOrdered }}</span></td>
+                <td class="is-numeric"><span class="data-table__num">{{ formatCurrency(item.revenue, selectedCurrency) }}</span></td>
+                <td>{{ formatDate(item.firstOrderDate) }}</td>
+                <td>
+                  <span :class="['status', 'status--' + getStockBadge(item.stockLevel)]">
+                    {{ translateStockLevel(item.stockLevel) }}
+                  </span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </div>
     </div>
@@ -727,545 +748,159 @@ export default {
 </script>
 
 <style scoped>
-.page-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1rem;
-}
-
-.header-meta {
-  font-size: 0.813rem;
-  color: #64748b;
-}
-
-.kpi-section {
-  margin-bottom: 1.5rem;
-}
-
-.section-title {
-  font-size: 1rem;
-  font-weight: 600;
-  color: #475569;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  margin-bottom: 1rem;
-}
-
-.kpi-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 1rem;
-}
-
-.kpi-card {
-  background: white;
-  border: 1px solid #e2e8f0;
-  border-radius: 10px;
-  padding: 1rem;
-}
-
-.kpi-header {
-  margin-bottom: 0.75rem;
-}
-
-.kpi-label {
-  font-size: 0.813rem;
-  font-weight: 600;
-  color: #64748b;
-  text-transform: uppercase;
-  letter-spacing: 0.025em;
-}
-
-.kpi-value {
-  font-size: 2rem;
-  font-weight: 700;
-  color: #0f172a;
-  margin-bottom: 0.5rem;
-  letter-spacing: -0.025em;
-}
-
-.kpi-goal {
-  font-size: 0.813rem;
-  color: #64748b;
-  margin-bottom: 0.75rem;
-}
-
-.kpi-progress-bar {
-  width: 100%;
-  height: 6px;
-  background: #f1f5f9;
-  border-radius: 3px;
-  overflow: hidden;
-}
-
-.kpi-progress {
-  height: 100%;
-  background: #3b82f6;
-  border-radius: 3px;
-  transition: width 0.6s ease;
-}
-
-.kpi-progress.success {
-  background: #10b981;
-}
-
-.charts-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 1.25rem;
-  margin-bottom: 1.5rem;
-}
-
-.chart-card.full-width {
-  grid-column: 1 / -1;
-}
-
-.chart-content {
-  padding: 1rem;
-}
-
-.donut-chart {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 3rem;
-}
-
-.donut-svg {
-  width: 200px;
-  height: 200px;
-}
-
-.donut-legend {
+.dash-body {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: var(--space-6);
 }
 
-.legend-item {
-  display: flex;
-  align-items: center;
-  gap: 0.625rem;
-  font-size: 0.875rem;
-  color: #475569;
-}
-
-.legend-dot {
-  width: 10px;
-  height: 10px;
-  border-radius: 2px;
-}
-
-/* Order Health Dashboard Styles */
-.order-health-container {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1.5rem;
-  align-items: center;
-  padding: 1rem;
-  min-height: 240px;
-}
-
-.order-health-chart {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 1rem;
-  padding: 0 1rem;
-}
-
-.donut-svg-compact {
-  width: 200px;
-  height: 200px;
-}
-
-.donut-center-label {
-  font-size: 12px;
-  fill: #64748b;
-  font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.donut-center-value {
-  font-size: 36px;
-  fill: #0f172a;
-  font-weight: 700;
-}
-
-.donut-legend-compact {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 0.625rem 1.25rem;
-}
-
-.legend-item-compact {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-size: 0.875rem;
-  color: #475569;
-  font-weight: 500;
-}
-
-.order-health-metrics {
-  display: flex;
-  flex-direction: column;
-  gap: 1.25rem;
-  justify-content: center;
-  align-items: center;
-}
-
-.health-metric {
-  display: flex;
-  flex-direction: column;
-  gap: 0.375rem;
-  text-align: center;
-  width: 100%;
-}
-
-.health-metric-label {
-  font-size: 0.688rem;
-  color: #64748b;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-
-.health-metric-value {
-  font-size: 1.75rem;
-  font-weight: 700;
-  color: #0f172a;
-  letter-spacing: -0.025em;
-}
-
-.metric-good {
-  color: #10b981;
-}
-
-.metric-warning {
-  color: #f59e0b;
-}
-
-.metric-bad {
-  color: #ef4444;
-}
-
-.horizontal-bar-chart {
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-  padding: 0 1rem;
-}
-
-.h-bar-item {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-}
-
-.h-bar-label {
-  width: 120px;
-  min-width: 120px;
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: #475569;
-  flex-shrink: 0;
-}
-
-.h-bar-container {
-  flex: 1;
-  height: 32px;
-  background: #f8fafc;
-  border-radius: 6px;
-  overflow: hidden;
-}
-
-.h-bar {
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  padding-right: 0.75rem;
-  transition: width 0.6s ease;
-}
-
-.h-bar-value {
-  font-size: 0.813rem;
-  font-weight: 700;
-  color: white;
-}
-
-.line-chart {
-  display: flex;
-  gap: 1.5rem;
-  height: 280px;
-}
-
-.line-y-axis {
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  padding-right: 1rem;
-  font-size: 0.75rem;
-  color: #94a3b8;
-  border-right: 1px solid #e2e8f0;
-}
-
-.line-chart-area {
-  flex: 1;
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-around;
-  gap: 0.5rem;
-}
-
-.line-bar-group {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  flex: 1;
-  max-width: 80px;
-  gap: 0.5rem;
-}
-
-.line-bar-wrapper {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
-  align-items: center;
-}
-
-.line-bar {
-  width: 100%;
-  max-width: 60px;
-  min-height: 8px;
-  background: #3b82f6;
-  border-radius: 6px 6px 0 0;
-  transition: all 0.3s ease;
-  cursor: pointer;
-  box-shadow: 0 2px 4px rgba(59, 130, 246, 0.3);
-}
-
-.line-bar.empty-bar {
-  background: #e2e8f0;
-  box-shadow: none;
-  min-height: 4px;
-}
-
-.line-bar:hover {
-  background: #2563eb;
-  transform: scaleY(1.05);
-}
-
-.line-bar.empty-bar:hover {
-  background: #cbd5e1;
-  transform: none;
-}
-
-.line-bar-label {
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: #64748b;
-  white-space: nowrap;
-}
-
-.no-data {
-  padding: 2rem;
-  text-align: center;
-  color: #94a3b8;
-  font-size: 0.875rem;
-}
-
-.no-backlog {
-  padding: 3rem;
-  text-align: center;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 1rem;
-}
-
-.success-icon {
-  width: 48px;
-  height: 48px;
-  color: #10b981;
-}
-
-.no-backlog-text {
-  font-size: 1.125rem;
-  color: #10b981;
-  font-weight: 600;
+.page-header__title {
   margin: 0;
 }
 
-.clickable-row {
-  cursor: pointer;
-  transition: background-color 0.15s ease;
+.section-title {
+  margin: 0 0 var(--space-4);
+  font-family: var(--font-display);
+  font-weight: var(--fw-semibold);
+  font-size: var(--text-md);
+  color: var(--muted);
 }
 
-.clickable-row:hover {
-  background: #eff6ff !important;
-}
-
-/* Tasks Card Styles */
-.tasks-card {
-  margin-bottom: 2rem;
-}
-
-.tasks-content {
-  padding: 1.5rem;
-}
-
-.task-input-container {
-  display: flex;
-  gap: 0.75rem;
-  margin-bottom: 1rem;
-}
-
-.task-input {
-  flex: 1;
-  padding: 0.75rem;
-  border: 2px solid #e2e8f0;
-  border-radius: 8px;
-  font-size: 0.95rem;
-  transition: border-color 0.2s ease;
-}
-
-.task-input:focus {
-  outline: none;
-  border-color: #667eea;
-}
-
-.task-add-btn {
-  padding: 0.75rem 1.5rem;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  border: none;
-  border-radius: 8px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: transform 0.2s ease, opacity 0.2s ease;
-}
-
-.task-add-btn:hover:not(:disabled) {
-  transform: translateY(-2px);
-}
-
-.task-add-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.no-tasks {
+/* Loading / error placeholders */
+.state-msg {
+  padding: var(--space-12);
   text-align: center;
-  padding: 2rem;
-  color: #64748b;
-  font-style: italic;
+  color: var(--muted);
+  font-size: var(--text-md);
+}
+.state-msg--error {
+  color: var(--danger);
 }
 
-.tasks-list {
+/* KPI progress under the value */
+.stat-tile .progress {
+  margin-top: var(--space-4);
+}
+
+/* ---- Order health card ---- */
+.order-health {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-6);
+  align-items: center;
+}
+.order-health__chart {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
-}
-
-.task-item {
-  display: flex;
   align-items: center;
-  gap: 0.75rem;
-  padding: 0.75rem;
-  background: #f8fafc;
-  border-radius: 8px;
-  border: 2px solid transparent;
-  transition: all 0.2s ease;
+  gap: var(--space-5);
 }
-
-.task-item:hover {
-  border-color: #e2e8f0;
-  background: white;
+.order-health__metrics {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-5);
 }
-
-.task-item.completed {
-  opacity: 0.6;
-}
-
-.task-item.completed .task-text {
-  text-decoration: line-through;
-  color: #94a3b8;
-}
-
-.task-checkbox {
-  width: 20px;
-  height: 20px;
-  cursor: pointer;
-  accent-color: #667eea;
-}
-
-.task-text {
-  flex: 1;
-  cursor: pointer;
-  user-select: none;
-  color: #0f172a;
-  font-size: 0.95rem;
-}
-
-.task-delete-btn {
-  width: 28px;
-  height: 28px;
-  background: #ef4444;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  font-size: 1.25rem;
-  line-height: 1;
-  cursor: pointer;
-  transition: all 0.2s ease;
+.metric {
   display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+.metric__label {
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  font-weight: var(--fw-medium);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  color: var(--faint);
+}
+.metric__value {
+  font-family: var(--font-display);
+  font-weight: var(--fw-bold);
+  font-size: var(--text-lg);
+  letter-spacing: var(--tracking-tight);
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+.metric__value--good { color: var(--success); }
+.metric__value--warning { color: var(--warning); }
+.metric__value--bad { color: var(--danger); }
+
+/* Donut segment colors via tokens */
+.donut__track { stroke: var(--surface-3); }
+.donut__seg--delivered { stroke: var(--success); }
+.donut__seg--shipped { stroke: var(--info); }
+.donut__seg--processing { stroke: var(--warning); }
+.donut__seg--backordered { stroke: var(--danger); }
+
+.legend__swatch--delivered { background: var(--success); }
+.legend__swatch--shipped { background: var(--info); }
+.legend__swatch--processing { background: var(--warning); }
+.legend__swatch--backordered { background: var(--danger); }
+
+/* ---- Category bars ---- */
+.bars {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+.bar-row__meta {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-bottom: var(--space-2);
+  font-size: var(--text-sm);
+}
+.bar-row__meta b {
+  color: var(--ink-2);
+  font-weight: var(--fw-medium);
+}
+.bar-row__meta span {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--muted);
 }
 
-.task-delete-btn:hover {
-  background: #dc2626;
-  transform: scale(1.1);
+/* ---- Tables ---- */
+.table-scroll {
+  overflow-x: auto;
 }
-
-.po-button {
-  padding: 0.5rem 1rem;
-  border: none;
-  border-radius: 6px;
-  font-size: 0.813rem;
-  font-weight: 600;
+.data-table td.cell-link {
   cursor: pointer;
-  transition: all 0.2s ease;
-  white-space: nowrap;
+}
+.data-table tbody tr.row-link {
+  cursor: pointer;
+}
+.text-danger {
+  color: var(--danger);
+  font-weight: var(--fw-semibold);
+}
+.text-warning {
+  color: var(--warning);
+  font-weight: var(--fw-semibold);
 }
 
-.po-button.create {
-  background: #3b82f6;
-  color: white;
+/* ---- Empty states ---- */
+.no-data {
+  padding: var(--space-8);
+  text-align: center;
+  color: var(--faint);
+  font-size: var(--text-sm);
 }
-
-.po-button.create:hover {
-  background: #2563eb;
-  transform: translateY(-1px);
-  box-shadow: 0 2px 4px rgba(59, 130, 246, 0.3);
+.no-shortage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-12);
+  text-align: center;
 }
-
-.po-button.view {
-  background: #64748b;
-  color: white;
+.no-shortage__icon {
+  color: var(--success);
 }
-
-.po-button.view:hover {
-  background: #475569;
-  transform: translateY(-1px);
-  box-shadow: 0 2px 4px rgba(100, 116, 139, 0.3);
+.no-shortage__text {
+  margin: 0;
+  font-size: var(--text-md);
+  font-weight: var(--fw-semibold);
+  color: var(--success);
 }
 </style>
